@@ -77,14 +77,12 @@ try:
         kCFPreferencesCurrentHost,
     )
 except ImportError:
-    print(
-        "WARNING: Failed 'from Foundation import NSArray, NSDictionary' in " + __name__
-    )
-    print(
-        "WARNING: Failed 'from CoreFoundation import "
-        "CFPreferencesAppSynchronize, ...' in " + __name__
-    )
-
+    if is_mac():
+        print(
+            "WARNING: Failed to import PyObjc functions. You may need to "
+            "reinstall the AutoPkg package from GitHub to repair your embedded "
+            "Python framework."
+        )
 
 BUNDLE_ID = "com.github.autopkg"
 
