@@ -41,19 +41,21 @@ from autopkglib import (
     core_processor_names,
     extract_processor_name_with_recipe_identifier,
     find_recipe_by_identifier,
-    get_all_prefs,
     get_autopkg_version,
     get_identifier,
-    get_pref,
     get_processor,
-    globalPreferences,
-    is_mac,
     log,
     log_err,
     processor_names,
-    set_pref,
     version_equal_or_greater,
 )
+from autopkglib.lib.preferences import (
+    get_all_prefs,
+    get_pref,
+    globalPreferences,
+    set_pref,
+)
+from autopkglib.lib.system import is_mac
 
 if sys.platform != "darwin":
     print(
