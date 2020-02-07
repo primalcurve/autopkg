@@ -31,6 +31,7 @@ import subprocess
 import sys
 import time
 import traceback
+from textwrap import dedent
 from urllib.parse import quote, urlparse
 
 import autopkglib.github
@@ -54,15 +55,6 @@ from autopkglib import (
     set_pref,
     version_equal_or_greater,
 )
-
-if sys.platform != "darwin":
-    print(
-        """
---------------------------------------------------------------------------------
--- WARNING: AutoPkg is not completely functional on platforms other than OS X --
---------------------------------------------------------------------------------
-"""
-    )
 
 # Catch Python 2 wrappers with an early f-string. Message must be on a single line.
 _ = f"""{sys.version_info.major} It looks like you're running the autopkg tool with an incompatible version of Python. Please update your script to use autopkg's included Python (/usr/local/autopkg/python). AutoPkgr users please note that AutoPkgr 1.5.1 and earlier is NOT compatible with autopkg 2. """  # noqa
@@ -2033,8 +2025,17 @@ def parse_recipe_list(filename):
 
 
 def run_recipes(argv):
-    """Run one or more recipes. If called with 'install' verb, run .install
-       recipe"""
+    """Run one or more recipes. If called with 'install' verb, run .install recipe"""
+    if sys.platform != "darwin":
+        print(
+            dedent(
+                """
+    --------------------------------------------------------------------------------
+    --   WARNING: 'autopkg run' is not functional on platforms other than macOS   --
+    --------------------------------------------------------------------------------
+    """
+            )
+        )
     verb = argv[1]
     parser = gen_common_parser()
     if verb == "install":
