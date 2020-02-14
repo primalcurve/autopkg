@@ -33,6 +33,8 @@ from autopkglib.system import is_mac
 try:
     from Foundation import NSArray, NSDictionary
 except ImportError:
+    NSArray = list
+    NSDictionary = dict
     if is_mac():
         print(
             "WARNING: Failed to import PyObjc functions. You may need to "
