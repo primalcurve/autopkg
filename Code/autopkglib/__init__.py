@@ -28,6 +28,7 @@ import re
 import subprocess
 import sys
 import traceback
+from copy import deepcopy
 from distutils.version import LooseVersion
 
 import yaml
@@ -233,7 +234,7 @@ class Preferences:
 
     def get_pref(self, key):
         """Retrieve a preference value."""
-        return self.prefs.get(key)
+        return deepcopy(self.prefs.get(key))
 
     def get_all_prefs(self):
         """Retrieve a dict of all preferences."""
@@ -444,7 +445,7 @@ class Processor:
 
     def output(self, msg, verbose_level=1):
         """Print a message if verbosity is >= verbose_level"""
-        if self.env.get("verbose", 0) >= verbose_level:
+        if int(self.env.get("verbose", 0)) >= verbose_level:
             print(f"{self.__class__.__name__}: {msg}")
 
     def main(self):
@@ -462,7 +463,7 @@ class Processor:
         """Read environment from input plist."""
 
         try:
-            indata = self.infile.read()
+            indata = self.infile.buffer.read()
             if indata:
                 self.env = plistlib.loads(indata)
             else:
@@ -479,6 +480,8 @@ class Processor:
         try:
             with open(self.outfile, "wb") as f:
                 plistlib.dump(self.env, f)
+        except TypeError:
+            plistlib.dump(self.env, self.outfile.buffer)
         except BaseException as err:
             raise ProcessorError(err)
 

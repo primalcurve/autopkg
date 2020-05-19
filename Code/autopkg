@@ -31,6 +31,8 @@ import subprocess
 import sys
 import time
 import traceback
+from base64 import b64decode
+from typing import List
 from urllib.parse import quote, urlparse
 
 import autopkglib.github
@@ -219,8 +221,61 @@ def get_identifier_from_override(override):
     return name
 
 
+def search_gh_for_name(name: str) -> List:
+    """Search GitHub for results for a given name."""
+    results_limit = 100
+    query = f"q={name}+extension:recipe+user:autopkg+in:file,path"
+    query += f"&per_page={results_limit}"
+
+    results = do_gh_code_search(query, use_token=False)
+
+    if not results or not results.get("total_count"):
+        log("Nothing found.")
+        return []
+
+    results_items = results["items"]
+
+    if not results_items:
+        log("Nothing found.")
+        return []
+    return results_items
+
+
+def get_repository_from_identifier(identifier: str):
+    """Get a repository name from a recipe identifier."""
+    results = search_gh_for_name(identifier)
+    # so now we have a list of items containing file names and URLs
+    # we want to fetch these so we can look inside the contents for a matching
+    # identifier
+    # We just want to fetch the repos that contain these
+    # Is the name an identifier?
+    identifier_fragments = identifier.split(".")
+    if identifier_fragments[0] != "com":
+        # This is not an identifier
+        return
+    correct_item = None
+    for item in results:
+        file_contents_raw = do_gh_repo_contents_fetch(
+            item["repository"]["name"], item.get("path")
+        )
+        file_contents_data = plistlib.loads(file_contents_raw)
+        if file_contents_data.get("Identifier") == identifier:
+            correct_item = item
+            break
+    # Did we get correct item?
+    if not correct_item:
+        return
+    print(f"Found this recipe in repository: {correct_item['repository']['name']}")
+    return correct_item["repository"]["name"]
+
+
 def locate_recipe(
-    name, override_dirs, recipe_dirs, make_suggestions=True, search_github=True
+    name,
+    override_dirs,
+    recipe_dirs,
+    make_suggestions=True,
+    search_github=True,
+    auto_pull=False,
 ):
     """Locates a recipe by name. If the name is the pathname to a file on disk,
     we attempt to load that file and use it as recipe. If a parent recipe
@@ -249,64 +304,43 @@ def locate_recipe(
 
     if not recipe_file and search_github:
         indef_article = "a"
-        if name[0] in ["a", "e", "i", "o", "u"]:
+        if name[0].lower() in ["a", "e", "i", "o", "u"]:
             indef_article = "an"
-        answer = input(
-            f"Search GitHub AutoPkg repos for {indef_article} {name} recipe? [y/n]: "
-        )
+        if not auto_pull:
+            answer = input(
+                f"Search GitHub AutoPkg repos for {indef_article} {name} recipe? "
+                "[y/n]: "
+            )
+        else:
+            answer = "y"
         if answer.lower().startswith("y"):
-            results_limit = 100
-            query = f"q={name}+extension:recipe+user:autopkg+in:file,path"
-            query += f"&per_page={results_limit}"
-
-            results = do_gh_code_search(query, use_token=False)
-
-            if not results or not results.get("total_count"):
-                log("Nothing found.")
-                return None
-
-            results_items = results["items"]
-
-            # Note 2015-03-11: this next block would erroneously remove repos
-            # that have new recipes that match our search (new recipes we don't
-            # yet have locally because we haven't done a repo-update)
-            #
-            ## filter out any results that are in repos we already have added
-            ## locally
-            # recipe_repo_urls = []
-            # recipe_repos = get_pref("RECIPE_REPOS") or {}
-            # for key in recipe_repos.keys():
-            #    recipe_repo_urls.append(recipe_repos[key]['URL'])
-            # results_items = [
-            #    item for item in results_items
-            #    if item['repository']['html_url'] not in recipe_repo_urls]
-            # if len(results_items) > 1:
-            #    # filter results items by matching filenames.
-            #    # this works around the fact that we can't do a
-            #    # case-insensitive filename search with the GitHub API
-            #    results_items = [item for item in results_items
-            #                     if name.lower() in item['name'].lower()]
-
-            if not results_items:
-                log("Nothing found.")
-                return None
-
-            print_gh_search_results(results_items)
-
-            # make a list of unique repo names
+            identifier_fragments = name.split(".")
             repo_names = []
-            for item in results_items:
-                repo_name = item["repository"]["name"]
-                if repo_name not in repo_names:
-                    repo_names.append(repo_name)
+            if identifier_fragments[0] == "com":
+                # Filter out "None" results if we don't find a matching recipe
+                parent_repo = get_repository_from_identifier(name)
+                repo_names = [parent_repo] if parent_repo else []
+
+            if not repo_names:
+                results_items = search_gh_for_name(name)
+                print_gh_search_results(results_items)
+                # make a list of unique repo names
+                repo_names = []
+                for item in results_items:
+                    repo_name = item["repository"]["name"]
+                    if repo_name not in repo_names:
+                        repo_names.append(repo_name)
 
             if len(repo_names) == 1:
                 # we found results in a single repo, so offer to add it
-                repo = results_items[0]["repository"]
-                print()
-                answer = input(f"Add recipe repo '{repo['name']}'? [y/n]: ")
+                repo = repo_names[0]
+                if not auto_pull:
+                    print()
+                    answer = input(f"Add recipe repo '{repo}'? [y/n]: ")
+                else:
+                    answer = "y"
                 if answer.lower().startswith("y"):
-                    repo_add([None, "repo-add", repo["name"]])
+                    repo_add([None, "repo-add", repo])
                     # try once again to locate the recipe, but don't
                     # search GitHub again!
                     print()
@@ -317,6 +351,7 @@ def locate_recipe(
                         recipe_dirs,
                         make_suggestions=True,
                         search_github=False,
+                        auto_pull=auto_pull,
                     )
             elif len(repo_names) > 1:
                 print()
@@ -334,6 +369,7 @@ def load_recipe(
     postprocessors=None,
     make_suggestions=True,
     search_github=True,
+    auto_pull=False,
 ):
     """Loads a recipe, first locating it by name.
     If we find one, we load it and return the plist or yaml object (which
@@ -353,6 +389,7 @@ def load_recipe(
         recipe_dirs,
         make_suggestions=make_suggestions,
         search_github=search_github,
+        auto_pull=auto_pull,
     )
 
     if recipe_file:
@@ -381,6 +418,7 @@ def load_recipe(
                 recipe_dirs,
                 make_suggestions=make_suggestions,
                 search_github=search_github,
+                auto_pull=auto_pull,
             )
             if recipe:
                 # merge child_recipe
@@ -447,7 +485,12 @@ def load_recipe(
 
 
 def get_recipe_info(
-    recipe_name, override_dirs, recipe_dirs, make_suggestions=True, search_github=True
+    recipe_name,
+    override_dirs,
+    recipe_dirs,
+    make_suggestions=True,
+    search_github=True,
+    auto_pull=False,
 ):
     """Loads a recipe, then prints some information about it. Override aware."""
     recipe = load_recipe(
@@ -456,6 +499,7 @@ def get_recipe_info(
         recipe_dirs,
         make_suggestions=make_suggestions,
         search_github=search_github,
+        auto_pull=auto_pull,
     )
     if recipe:
         log(
@@ -866,6 +910,37 @@ def repo_update(argv):
             log_err(err)
 
 
+def do_gh_repo_contents_fetch(
+    repo: str, path: str, use_token=False, decode=True
+) -> str:
+    """Fetch file contents from GitHub and return as a string."""
+    gh_session = autopkglib.github.GitHubSession()
+    if use_token:
+        gh_session.setup_token()
+    # Do the search, including text match metadata
+    (results, code) = gh_session.call_api(
+        f"/repos/autopkg/{repo}/contents/{quote(path)}"
+    )
+
+    if code == 403:
+        log_err(
+            "You've probably hit the GitHub's search rate limit, officially 5 "
+            "requests per minute.\n"
+        )
+        if results:
+            log_err("Server response follows:\n")
+            log_err(results.get("message", None))
+            log_err(results.get("documentation_url", None))
+
+        return None
+    if results is None or code is None:
+        log_err("A GitHub API error occurred!")
+        return None
+    if decode:
+        return b64decode(results["content"])
+    return results["content"]
+
+
 def do_gh_code_search(query, use_token=False):
     """Search GitHub code repos"""
     gh_session = autopkglib.github.GitHubSession()
@@ -895,6 +970,8 @@ def do_gh_code_search(query, use_token=False):
 
 def print_gh_search_results(results_items):
     """Pretty print our GitHub search results"""
+    if not results_items:
+        return
     column_spacer = 4
     max_name_length = max([len(r["name"]) for r in results_items]) + column_spacer
     max_repo_length = (
@@ -1033,7 +1110,16 @@ def get_info(argv):
         "-q",
         "--quiet",
         action="store_true",
-        help=("Don't offer to search Github if a recipe can't " "be found."),
+        help=("Don't offer to search Github if a recipe can't be found."),
+    )
+    parser.add_option(
+        "-p",
+        "--pull",
+        action="store_true",
+        help=(
+            "Pull the parent repos if they can't be found in the search path."
+            "Implies agreement to search GitHub."
+        ),
     )
     (options, arguments) = common_parse(parser, argv)
 
@@ -1056,6 +1142,7 @@ def get_info(argv):
             search_dirs,
             make_suggestions=make_suggestions,
             search_github=make_suggestions,
+            auto_pull=options.pull,
         ):
             return 0
         else:
@@ -2718,6 +2805,7 @@ def main(argv):
             "function": list_recipes,
             "help": "List recipes available locally",
         },
+        "list-repos": {"function": repo_list, "help": "see repo-list"},
         "list-processors": {
             "function": list_processors,
             "help": "List available core Processors",
@@ -2727,6 +2815,10 @@ def main(argv):
         "processor-info": {
             "function": processor_info,
             "help": "Get information about a specific processor",
+        },
+        "processor-list": {
+            "function": list_processors,
+            "help": "see list-processors",
         },
         "repo-add": {
             "function": repo_add,
