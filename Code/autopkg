@@ -31,8 +31,8 @@ import subprocess
 import sys
 import time
 import traceback
-from textwrap import dedent
 from base64 import b64decode
+from textwrap import dedent
 from typing import List
 from urllib.parse import quote, urlparse
 
@@ -2821,10 +2821,7 @@ def main(argv):
             "function": processor_info,
             "help": "Get information about a specific processor",
         },
-        "processor-list": {
-            "function": list_processors,
-            "help": "see list-processors",
-        },
+        "processor-list": {"function": list_processors, "help": "see list-processors"},
         "repo-add": {
             "function": repo_add,
             "help": "Add one or more recipe repo from a URL",
