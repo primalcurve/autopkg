@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This powershell script exists to provide a convenient wrapper around autopkg on 
+# This powershell script exists to provide a convenient wrapper around autopkg on
 # Windows that ensures the right python version and dependencies are used.
 
 <#
@@ -55,4 +55,4 @@ if (Test-Path $AutopkgRoot\.python-env) {
 }
 $AutopkgScript = Join-Path $AutopkgRoot 'Code\autopkg'
 
-& python $AutopkgScript $Subcommand $AutopkgArgs
+& python3.8 $AutopkgScript $Subcommand $AutopkgArgs

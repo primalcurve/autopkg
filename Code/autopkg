@@ -36,6 +36,7 @@ from typing import Optional
 from urllib.parse import quote, urlparse
 
 from autopkgcmd import common_parse, gen_common_parser, search_recipes
+from autopkglib.common import is_mac, is_windows, log, log_err
 from autopkglib import (
     APP_NAME,
     AutoPackager,
@@ -50,10 +51,6 @@ from autopkglib import (
     get_identifier,
     get_pref,
     get_processor,
-    is_mac,
-    is_windows,
-    log,
-    log_err,
     processor_names,
     set_pref,
     version_equal_or_greater,

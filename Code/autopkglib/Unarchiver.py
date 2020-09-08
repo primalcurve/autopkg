@@ -22,7 +22,8 @@ import tarfile
 import zipfile
 from typing import Dict, Type, Union
 
-from autopkglib import Processor, ProcessorError, is_mac
+from autopkglib import Processor, ProcessorError
+from autopkglib.common import is_mac
 
 __all__ = ["Unarchiver"]
 
