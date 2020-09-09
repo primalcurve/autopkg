@@ -15,8 +15,8 @@
 # limitations under the License.
 
 """Shared common functions. Nothing in here may depend on other autopkg modules."""
-
 import platform
+import re
 import sys
 from typing import IO, Any, Dict, Union
 
@@ -27,6 +27,11 @@ FileOrPath = Union[IO, str, bytes, int]
 # Most commonly for `input_variables` and friends. It also applies to virtually all
 # usages of plistlib results as well.
 VarDict = Dict[str, Any]
+
+APP_NAME = "Autopkg"
+BUNDLE_ID = "com.github.autopkg"
+
+RE_KEYREF = re.compile(r"%(?P<key>[a-zA-Z_][a-zA-Z_0-9]*)%")
 
 
 def is_mac():
