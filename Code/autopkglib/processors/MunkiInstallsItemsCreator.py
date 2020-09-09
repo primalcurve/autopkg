@@ -18,7 +18,8 @@
 import plistlib
 import subprocess
 
-from autopkglib import Processor, ProcessorError, log
+from autopkglib import Processor, ProcessorError
+from autopkglib.common import log
 
 try:
     from Foundation import NSDictionary
