@@ -21,7 +21,7 @@ import shutil
 import subprocess
 
 from autopkglib import ProcessorError
-from autopkglib.DmgMounter import DmgMounter
+from autopkglib.processors.DmgMounter import DmgMounter
 
 __all__ = ["PkgExtractor"]
 

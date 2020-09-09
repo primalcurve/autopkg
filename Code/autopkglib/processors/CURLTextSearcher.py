@@ -16,7 +16,7 @@
 """Stub that allows URLTextSearcher to be called as 'CURLTextSearcher' during
 the deprecation period."""
 
-from autopkglib.URLTextSearcher import URLTextSearcher
+from autopkglib.processors.URLTextSearcher import URLTextSearcher
 
 __all__ = ["CURLTextSearcher"]
 

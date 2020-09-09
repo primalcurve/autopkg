@@ -21,7 +21,7 @@ import socket
 from glob import glob
 
 from autopkglib import ProcessorError
-from autopkglib.DmgMounter import DmgMounter
+from autopkglib.processors.DmgMounter import DmgMounter
 
 AUTOPKGINSTALLD_SOCKET = "/var/run/autopkginstalld"
 

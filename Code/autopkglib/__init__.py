@@ -934,8 +934,9 @@ _PROCESSOR_NAMES = []
 def import_processors():
     """Imports processors from the directory this init file is in"""
     # get the directory this __init__.py file is in
-    mydir = os.path.dirname(os.path.abspath(__file__))
-    mydirname = os.path.basename(mydir)
+    mydir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "processors")
+    processor_dir = os.path.dirname(os.path.abspath(__file__))
+    mydirname = os.path.basename(processor_dir)
 
     # find all the .py files (minus this one)
     processor_files = [
@@ -955,7 +956,7 @@ def import_processors():
     #
     for name in processor_files:
         globals()[name] = getattr(
-            __import__(mydirname + "." + name, fromlist=[name]), name
+            __import__(mydirname + ".processors." + name, fromlist=[name]), name
         )
         _PROCESSOR_NAMES.append(name)
         _CORE_PROCESSOR_NAMES.append(name)

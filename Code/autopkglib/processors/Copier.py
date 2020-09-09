@@ -20,7 +20,7 @@ import os.path
 import shutil
 
 from autopkglib import ProcessorError
-from autopkglib.DmgMounter import DmgMounter
+from autopkglib.processors.DmgMounter import DmgMounter
 
 __all__ = ["Copier"]
 

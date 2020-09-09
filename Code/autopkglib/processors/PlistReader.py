@@ -22,7 +22,7 @@ import os.path
 import plistlib
 
 from autopkglib import ProcessorError
-from autopkglib.DmgMounter import DmgMounter
+from autopkglib.processors.DmgMounter import DmgMounter
 
 __all__ = ["PlistReader"]
 

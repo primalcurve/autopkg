@@ -20,7 +20,7 @@ import os.path
 from glob import glob
 
 from autopkglib import ProcessorError
-from autopkglib.DmgMounter import DmgMounter
+from autopkglib.processors.DmgMounter import DmgMounter
 
 __all__ = ["FileFinder"]
 

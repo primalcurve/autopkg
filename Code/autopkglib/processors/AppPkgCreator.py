@@ -21,8 +21,8 @@ import shutil
 from glob import glob
 
 from autopkglib import ProcessorError
-from autopkglib.DmgMounter import DmgMounter
-from autopkglib.PkgCreator import PkgCreator
+from autopkglib.processors.DmgMounter import DmgMounter
+from autopkglib.processors.PkgCreator import PkgCreator
 
 __all__ = ["AppPkgCreator"]
 
