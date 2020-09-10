@@ -15,9 +15,6 @@
 # limitations under the License.
 """autopkg tool. Runs autopkg recipes and also handles other
 related tasks"""
-
-
-import appdirs
 import copy
 import difflib
 import glob
@@ -35,6 +32,7 @@ from base64 import b64decode
 from typing import Optional
 from urllib.parse import quote, urlparse
 
+import appdirs
 from autopkgcmd import common_parse, gen_common_parser, search_recipes
 from autopkglib import (
     APP_NAME,
@@ -50,14 +48,11 @@ from autopkglib import (
     get_identifier,
     get_pref,
     get_processor,
-    is_mac,
-    is_windows,
-    log,
-    log_err,
     processor_names,
     set_pref,
     version_equal_or_greater,
 )
+from autopkglib.common import is_mac, is_windows, log, log_err
 from autopkglib.github import GitHubSession, print_gh_search_results
 
 if sys.platform != "darwin":

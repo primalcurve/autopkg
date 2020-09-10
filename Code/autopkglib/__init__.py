@@ -27,47 +27,12 @@ import sys
 import traceback
 from copy import deepcopy
 from distutils.version import LooseVersion
-from typing import IO, Any, Dict, Optional, Union
+from typing import IO, Dict, Optional
 
 import appdirs
 import pkg_resources
 
-# Type for methods that accept either a filesystem path or a file-like object.
-FileOrPath = Union[IO, str, bytes, int]
-
-# Type for ubiquitus dictionary type used throughout autopkg.
-# Most commonly for `input_variables` and friends. It also applies to virtually all
-# usages of plistlib results as well.
-VarDict = Dict[str, Any]
-
-
-def is_mac():
-    """Return True if current OS is macOS."""
-    return "darwin" in sys.platform.lower()
-
-
-def is_windows():
-    """Return True if current OS is Windows."""
-    return "win32" in sys.platform.lower()
-
-
-def is_linux():
-    """Return True if current OS is Linux."""
-    return "linux" in sys.platform.lower()
-
-
-def log(msg, error=False):
-    """Message logger, prints to stdout/stderr."""
-    if error:
-        print(msg, file=sys.stderr)
-    else:
-        print(msg)
-
-
-def log_err(msg):
-    """Message logger for errors."""
-    log(msg, error=True)
-
+from .common import FileOrPath, VarDict, is_linux, is_mac, is_windows, log_err
 
 try:
     from CoreFoundation import (
