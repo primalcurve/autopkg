@@ -28,6 +28,8 @@ import subprocess
 import sys
 import time
 import traceback
+import stat
+
 from base64 import b64decode
 from typing import Optional
 from urllib.parse import quote, urlparse
@@ -770,6 +772,12 @@ Example: '%prog repo-add recipes'
         log(f"  '{search_dir}'")
 
 
+def remove_readonly(func, path, _):
+    "Clear the readonly bit and reattempt the removal"
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+
 def repo_delete(argv):
     """Delete a recipe repo"""
     verb = argv[1]
@@ -801,7 +809,7 @@ def repo_delete(argv):
             recipe_search_dirs.remove(repo_path)
         # now remove the repo files
         try:
-            shutil.rmtree(repo_path)
+            shutil.rmtree(repo_path, onerror=remove_readonly)
         except OSError as err:
             log_err(f"ERROR: Could not remove {repo_path}: {err}")
         else:
