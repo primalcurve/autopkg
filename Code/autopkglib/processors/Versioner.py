@@ -21,7 +21,7 @@ import zipfile
 from typing import Callable, Iterator, List, Optional
 
 from autopkglib import FileOrPath, ProcessorError, VarDict
-from autopkglib.DmgMounter import DmgMounter
+from autopkglib.processors.DmgMounter import DmgMounter
 
 UNKNOWN_VERSION = "UNKNOWN_VERSION"
 
@@ -139,9 +139,7 @@ class Versioner(DmgMounter):
         return deserializer(archive.open(inner_path))
 
     def _read_from_dmg(
-        self,
-        path: str,
-        deserializer: Callable[[FileOrPath], VarDict],
+        self, path: str, deserializer: Callable[[FileOrPath], VarDict]
     ) -> Optional[VarDict]:
         """Parse a file from a DMG and return `bytes`, or `None` if no such file exists.
 

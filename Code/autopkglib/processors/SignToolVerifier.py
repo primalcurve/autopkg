@@ -140,9 +140,7 @@ class SignToolVerifier(Processor):
         additional_arguments = self.env["additional_arguments"]
 
         self.codesign_verify(
-            signtool_path,
-            input_path,
-            additional_arguments=additional_arguments,
+            signtool_path, input_path, additional_arguments=additional_arguments
         )
 
 
