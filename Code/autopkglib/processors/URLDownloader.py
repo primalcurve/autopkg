@@ -19,7 +19,8 @@
 import os.path
 import tempfile
 
-from autopkglib import BUNDLE_ID, ProcessorError, xattr
+from autopkglib import ProcessorError, xattr
+from autopkglib.common import BUNDLE_ID
 from autopkglib.processors.URLGetter import URLGetter
 
 __all__ = ["URLDownloader"]
@@ -179,7 +180,8 @@ class URLDownloader(URLGetter):
                 .replace('"', "")
             )
             self.output(
-                f"Filename prefetched from the HTTP Content-Disposition header: {filename}",
+                "Filename prefetched from the HTTP Content-Disposition header: "
+                f"{filename}",
                 verbose_level=2,
             )
         elif header.get("http_redirected", None):

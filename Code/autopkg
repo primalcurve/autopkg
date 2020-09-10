@@ -35,10 +35,8 @@ from urllib.parse import quote, urlparse
 import appdirs
 from autopkgcmd import common_parse, gen_common_parser, search_recipes
 from autopkglib import (
-    APP_NAME,
     AutoPackager,
     AutoPackagerError,
-    PreferenceError,
     core_processor_names,
     extract_processor_name_with_recipe_identifier,
     find_binary,
@@ -52,8 +50,9 @@ from autopkglib import (
     set_pref,
     version_equal_or_greater,
 )
-from autopkglib.common import is_mac, is_windows, log, log_err
+from autopkglib.common import APP_NAME, is_mac, is_windows, log, log_err
 from autopkglib.github import GitHubSession, print_gh_search_results
+from autopkglib.prefs import PreferenceError
 
 if sys.platform != "darwin":
     print(

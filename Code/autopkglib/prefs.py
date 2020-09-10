@@ -85,6 +85,10 @@ class Preferences:
         # Path to the preferences file we were given
         self.file_path: Optional[str] = None
         # If we're on macOS, read in the preference domain first.
+        # What we should do:
+        # 1. On macOS, if we did not get passed --prefs, use domain as normal
+        # 2. For everyone else, prefs path will be nil if not passed in, so create
+        # a default prefs file and save two empty keys to it
         if is_mac():
             self.prefs = self._get_macos_prefs()
         else:
